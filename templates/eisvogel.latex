@@ -81,7 +81,7 @@ $endfor$
 ]{$if(beamer)$$documentclass$$else$$if(book)$scrbook$else$scrartcl$endif$$endif$}
 \usepackage{xeCJK}
 % \setCJKmainfont{Source Han Serif}
-\setCJKmainfont{教育部標準楷書}
+\setCJKmainfont[AutoFakeBold=1.8]{教育部標準楷書}
 $if(beamer)$
 $if(background-image)$
 \usebackgroundtemplate{%

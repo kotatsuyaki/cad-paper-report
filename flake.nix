@@ -13,6 +13,7 @@
         deps = with pkgs; [
           texlive.combined.scheme-full
           pandoc
+          haskellPackages.pandoc-crossref
           librsvg
           gnumake
         ];
