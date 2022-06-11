@@ -4,6 +4,7 @@
 作者基於原有的演算法，利用Disappearance（消失）性質與Adjacency（相鄰）性質之間的關係，
 設計出了更高效率的演算法，並以實驗證明該演算法的優勢。
 
+
 # 常用符號與問題定義
 
 Fanout-less
@@ -30,6 +31,10 @@ Adjacency
     此關係在其他文獻中被證明為集合$X$上的一等價關係，
     因此$=_a$將集合$X$劃分為一或多個類，稱為adjacency classes。
 
+Disappearance
+:   變數$x$消失於（disappears in）布林函式$f(X)$，若且唯若$f$之值不受$x$影響。
+
+
 # JPH演算法
 
 JPH演算法為John P. Hayes在[@10.1145/321906.321918]中提出的fanout-free判別演算法。
@@ -43,7 +48,7 @@ JPH演算法為John P. Hayes在[@10.1145/321906.321918]中提出的fanout-free�
 
 \end{thm}
 
-JPH演算法執行過程為一個大的迴圈，
+JPH演算法執行過程為一個迴圈，
 每次迭代都利用上述定理，
 如[@fig:decomp]所示，
 將當前的輸入函式$f_i$之輸入$X_i$劃分為adjacency classes後，
@@ -51,5 +56,25 @@ JPH演算法執行過程為一個大的迴圈，
 再以檢視真值表的方式來建構出剩餘部分的新函式$f_{i+1}$。
 
 ![利用adjacency關係進行函式的拆解](./resources/adj-decomp.png){#fig:decomp}
+
+[@fig:jph]展示了JPH演算法的流程。
+注意此演算法在每次迭代中，都需要實行兩兩cofactor之間的等效性檢查，
+以確認$f_i$的輸入變數之間的adjacency關係。
+本篇論文提出了不需等效性檢查的替代做法。
+
+![JPH演算法流程](./resources/jph.png){#fig:jph}
+
+
+# 新提出的方法
+
+本篇論文提出的演算法大部分基於JPH演算法。
+作者推導出了下列disappearance與adjacency之間的等同關係，
+並根據這個關係，將判斷adjacency的問題化簡為判斷disappearance的問題。
+
+\begin{lem}
+
+令$x_i \neq x_j$為$f(X)$之輸入變數。若$x_i =_a x_j$，則$x_j$消失於$f(x_i=a)$中，且$x_i$消失於$f(x_j=a)$。
+
+\end{lem}
 
 <!-- vim: set ft=markdown.pandoc colorcolumn=100: -->

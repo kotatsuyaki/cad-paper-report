@@ -9,11 +9,14 @@ fontsize: 12pt
 
 maketitle: true
 colorlinks: true
+# 引用之「圖x」
 figPrefix: 圖
 header-includes:
   - \addtokomafont{disposition}{\normalfont}
   - \usepackage{amsthm}
   - \newtheorem*{thm}{定理}
+  - \newtheorem*{lem}{引理}
+# 圖的caption的「圖x」
   - |
     ```{=latex}
     \AtBeginDocument{%
