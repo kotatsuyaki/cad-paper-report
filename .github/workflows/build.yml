@@ -1,0 +1,34 @@
+name: "Build Nix flake on Ubuntu"
+
+on:
+  push:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: cachix/install-nix-action@v17
+      - name: Build package
+        run: nix build .#
+
+      - run: echo "RESULT=$(readlink -f result)" >> $GITHUB_ENV
+      - uses: actions/upload-artifact@v3
+        with:
+          name: PDF
+          path: ${{ env.RESULT }}/*.pdf
+
+  pages:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - uses: actions/download-artifact@v3
+        id: download
+        with:
+          name: PDF
+      - run: echo '<!DOCTYPE html><html><a href="./main.pdf">PDF file</a></html>' >> ${{ steps.download.outputs.download-path }}/index.html
+      - uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ${{ steps.download.outputs.download-path }}
