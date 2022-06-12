@@ -127,10 +127,12 @@
 \usepackage{float}
 \floatplacement{figure}{H}
 
-\addtokomafont{disposition}{\normalfont}
 \usepackage{amsthm}
 \newtheorem*{thm}{定理}
-\AtBeginDocument{\renewcommand*{\figurename}{圖}}
+\newtheorem*{lem}{引理}
+\AtBeginDocument{%
+\addto\captionsenglish{\renewcommand{\figurename}{圖}}
+}
 \makeatletter
 \@ifpackageloaded{subfig}{}{\usepackage{subfig}}
 \@ifpackageloaded{caption}{}{\usepackage{caption}}
@@ -371,7 +373,7 @@ CAD\hfill{\large \theauthor}}
 \hypertarget{ux7c21ux4ecb}{%
 \section{簡介}\label{ux7c21ux4ecb}}
 
-這篇論文討論了有效率地判別布林函數是否為Fanout-less（無扇出）的方法。作者基於原有的演算法，利用Disappearance（消失）性質與Adjacency（相鄰）性質之間的關係，設計出了更高效率的演算法，並以實驗證明該演算法的優勢。
+這篇論文{[}1{]}討論了有效率地判別布林函數是否為Fanout-less（無扇出）的方法。作者基於原有的演算法，利用Disappearance（消失）性質與Adjacency（相鄰）性質之間的關係，設計出了更高效率的演算法，並以實驗證明該演算法的優勢。
 
 \hypertarget{ux5e38ux7528ux7b26ux865fux8207ux554fux984cux5b9aux7fa9}{%
 \section{常用符號與問題定義}\label{ux5e38ux7528ux7b26ux865fux8207ux554fux984cux5b9aux7fa9}}
@@ -380,7 +382,7 @@ CAD\hfill{\large \theauthor}}
 \item[Fanout-less]
 布林函式\(f(X)\)為fanout-less的，若且唯若存在一\(f\)的表示方法，使得\(X=\{x_1, \dots, x_n\}\)中每個元素在\(f\)中出現恰一次。
 
-值得一提的是，在{[}1{]}中， fanout-free有一個等價的遞迴定義：
+值得一提的是，在{[}2{]}中， fanout-free有一個等價的遞迴定義：
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
@@ -398,13 +400,16 @@ CAD\hfill{\large \theauthor}}
 
 此關係在其他文獻中被證明為集合\(X\)上的一等價關係，因此\(=_a\)將集合\(X\)劃分為一或多個類，稱為adjacency
 classes。
+\item[Disappearance]
+變數\(x\)消失於（disappears
+in）布林函式\(f(X)\)，若且唯若\(f\)之值不受\(x\)影響。
 \end{description}
 
 \hypertarget{jphux6f14ux7b97ux6cd5}{%
 \section{JPH演算法}\label{jphux6f14ux7b97ux6cd5}}
 
 JPH演算法為John P.
-Hayes在{[}1{]}中提出的fanout-free判別演算法。該算法主要利用了adjacency關係與以下定理（該論文中定理4）。
+Hayes在{[}2{]}中提出的fanout-free判別演算法。該算法主要利用了adjacency關係與以下定理（該論文中定理4）。
 
 \begin{thm}
 
@@ -414,7 +419,7 @@ Hayes在{[}1{]}中提出的fanout-free判別演算法。該算法主要利用了
 
 \end{thm}
 
-JPH演算法執行過程為一個大的迴圈，每次迭代都利用上述定理，如fig.~\ref{fig:decomp}所示，將當前的輸入函式\(f_i\)之輸入\(X_i\)劃分為adjacency
+JPH演算法執行過程為一個迴圈，每次迭代都利用上述定理，如圖~\ref{fig:decomp}所示，將當前的輸入函式\(f_i\)之輸入\(X_i\)劃分為adjacency
 classes後，從\(f\)分離出\(\phi_{i_1}, \dots, \phi_{i_r}\)等邏輯閘，再以檢視真值表的方式來建構出剩餘部分的新函式\(f_{i+1}\)。
 
 \begin{figure}
@@ -425,10 +430,156 @@ classes後，從\(f\)分離出\(\phi_{i_1}, \dots, \phi_{i_r}\)等邏輯閘，�
 }
 \end{figure}
 
+圖~\ref{fig:jph}展示了JPH演算法的流程。注意此演算法在每次迭代中，都需要實行兩兩cofactor之間的等效性檢查，以確認\(f_i\)的輸入變數之間的adjacency關係。本篇論文提出了不需等效性檢查的替代做法。
+
+\begin{figure}
+\hypertarget{fig:jph}{%
+\centering
+\includegraphics[width=0.55\textwidth,height=\textheight]{./resources/jph.png}
+\caption{JPH演算法流程}\label{fig:jph}
+}
+\end{figure}
+
+\hypertarget{ux65b0ux63d0ux51faux7684ux65b9ux6cd5}{%
+\section{新提出的方法}\label{ux65b0ux63d0ux51faux7684ux65b9ux6cd5}}
+
+本篇論文提出的演算法大部分基於JPH演算法。作者推導出了下列disappearance與adjacency之間的等同關係，並根據這個關係，將判斷adjacency的問題化簡為判斷disappearance的問題。
+
+\hypertarget{ux5b9aux7406ux63a8ux5c0e}{%
+\subsection{定理推導}\label{ux5b9aux7406ux63a8ux5c0e}}
+
+\begin{lem}[Adjacency implies disappearance]
+
+令$x_i \neq x_j$為$f(X)$之輸入變數。
+若$x_i =_a x_j$，
+則$x_j$消失於$f(x_i=a)$中，且$x_i$消失於$f(x_j=a)$中。
+
+\end{lem}
+
+上述引理十分直觀，並且可透過反證法證明。它的逆敘述也成立：
+
+\begin{lem}[Disappearance implies adjacency]
+
+令$x_i \neq x_j$為$f(X)$之輸入變數。
+若$x_j$消失於$f(x_i=a)$中，且$x_i$消失於$f(x_j=a)$中，
+則$x_i =_a x_j$
+
+\end{lem}
+
+上述引理較不直觀，需要透過假設\(f = x_ix_jA + x_iB + x_jC + (x_i+x_j)D + E\)的形式，並利用前提中的「消失」來推導出\(A,B,C,D,E\)中哪些項為\(0\)，以此驗證兩個cofactor的確相等。
+
+由上述兩個引理，作者得出adjacency與disappearance等價的結論：
+
+\begin{thm}[Adjacency $\Leftrightarrow$ disappearance]
+
+令$x_i \neq x_j$為$f(X)$之輸入變數。
+$x_i =_a x_j$，若且唯若
+$x_j$消失於$f(x_i=a)$中，且$x_i$消失於$f(x_j=a)$中。
+
+\end{thm}
+
+\hypertarget{ux6f14ux7b97ux6cd5ux64cdux4f5cux7bc4ux4f8b}{%
+\subsection{演算法操作範例}\label{ux6f14ux7b97ux6cd5ux64cdux4f5cux7bc4ux4f8b}}
+
+以下為作者實際示範使用disappearance性質來檢測adjacency關係的例子。令輸入為下列\(f\)：
+
+\[f = x_1x_2x_3x_4 + x_1x_2x_3x_5 + x_4x_6 + x_5x_6\]
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  與JPH演算法相同，作者先計算了\(f\)中\(x_1, x_2, \dots, x_6\)的cofactors。
+
+  \[\begin{cases}
+  f(x_1 = 0) = x_4x_6+x_5x_6\\
+  f(x_2 = 0) = x_4x_6+x_5x_6\\
+  f(x_3 = 0) = x_4x_6+x_5x_6\\
+  f(x_4 = 0) = x_1x_2x_3x_5+x_5x_6\\
+  f(x_5 = 0) = x_1x_2x_3x_4+x_4x_6\\
+  f(x_6 = 0) = x_1x_2x_3x_4+x_1x_2x_3x_5
+  \end{cases}\]
+\item
+  接著，作者以列出二維矩陣的方式，來記錄\(x_i\)中是否有出現\(x_j\)。下列矩陣當中，\((i, j)\)項為\(0\)代表\(x_j\)消失於\(f(x_1 = 0)\)的cofactor中；反之則代表有出現。由於cofactor的定義，對角線項全為\(0\)。
+
+  \[\begin{matrix}
+  & x_1 & x_2 & x_3 & x_4 & x_5 & x_6\\
+  f(x_1 = 0) & \textcolor{gray}{0} & \textcolor{red}{0} & 0 & 1 & 1 & 1\\
+  f(x_2 = 0) & \textcolor{red}{0} & \textcolor{gray}{0} & 0 & 1 & 1 & 1\\
+  f(x_3 = 0) & 0 & 0 & \textcolor{gray}{0} & 1 & 1 & 1\\
+  f(x_4 = 0) & 1 & 1 & 1 & \textcolor{gray}{0} & 1 & 1\\
+  f(x_5 = 0) & 1 & 1 & 1 & 1 & \textcolor{gray}{0} & 1\\
+  f(x_6 = 0) & 1 & 1 & 1 & 1 & 1 & \textcolor{gray}{0}
+  \end{matrix}\]
+
+  若是\((i, j)\)項與\((j, i)\)為\(0\)，則由定理可以推出\(x_i =_0 x_j\)。遍歷檢查矩陣中的每一項\footnote{實際上，若\(x_i\)已被劃入某等價類中，則\(f(x_i=a)\)列就不需再檢查一次。}，則可以得到所有\(=_1\)的adjacency關係。對\(f(x_i = 1)\)的cofactors重複步驟1與步驟2，則可以得到\(f\)中所有的adjacency
+  classes。
+
+  此範例中，變數被分為三個等價類：
+
+  \[\textcolor{red}{\{x_1, x_2, x_3\}} \textcolor{blue}{\{x_4, x_5\}} \{x_6\}\]
+\item
+  作者按照JPH演算法的函式拆解定理給出新的函式\(g(\phi_1, \phi_2, \phi_3)\)應當滿足的條件：
+
+  \begin{figure}
+  \centering
+  \includegraphics[width=0.55\textwidth,height=\textheight]{./resources/factor.png}
+  \caption{\(g\)應滿足的條件}
+  \end{figure}
+
+  在JPH中，我們需要建造真值表以尋找符合條件的\(g\)，但建造真值表的時間複雜度為\(O(2^N)\)，其中\(N\)為變數的數量。這邊作者利用division與absorption
+  laws，提出了一個基於替換\(f\)的做法。欲尋找\(g\)的布林表達式，我們只需要在\(f\)中將\(x_i\)替換成它的等價類\(\phi_k\)即可：
+
+  \[\begin{aligned}
+  &{} f(x_1, x_2, x_3, x_4, x_5, x_6) = \textcolor{red}{x_1x_2x_3}\textcolor{blue}{x_4}+\textcolor{red}{x_1x_2x_3}\textcolor{blue}{x_5}+\textcolor{blue}{x_4}x_6+\textcolor{blue}{x_5}x_6\\
+  & = f(\phi_1, \phi_1, \phi_1, \phi_2, \phi_2, \phi_3) = \textcolor{red}{\phi_1\phi_1\phi_1}\textcolor{blue}{\phi_2}+\textcolor{red}{\phi_1\phi_1\phi_1}\textcolor{blue}{\phi_2}+\textcolor{blue}{\phi_2}\phi_3+\textcolor{blue}{\phi_2}\phi_3\\
+  & = g(\phi_1, \phi_2, \phi_3) = \textcolor{red}{\phi_1}\textcolor{blue}{\phi_2} + \textcolor{blue}{\phi_2}\phi_3
+  \end{aligned}\]
+\end{enumerate}
+
+重複迭代上述三個步驟直到滿足圖~\ref{fig:jph}中的「\(f_i(X_i)\) is
+fanout-free」則化簡出的函式為\(f\)的一個fanout-free表示法。若途中遇到無任何adjacency關係的狀況，則\(f\)並不是一個fanout-free的布林函式。
+
+\hypertarget{ux8907ux96dcux5ea6ux5206ux6790}{%
+\subsection{複雜度分析}\label{ux8907ux96dcux5ea6ux5206ux6790}}
+
+\begin{itemize}
+\item
+  JPH演算法：對於每一對變數，等效性檢查的時間複雜度為\(O(2^N)\)，其中\(N\)為變數個數。因此，整體時間複雜度為\(O(N^22^N)\)。此為一exponential
+  time演算法。
+\item
+  本文提出算法：建造矩陣過程需要處理\(N\)個cofactors，且每個cofactor中約有\(NK\)個項，故時間複雜度為\(O(N^2K)\)。此為一polynomial
+  time演算法。
+\end{itemize}
+
+\hypertarget{ux5be6ux9a57ux7d50ux679c}{%
+\subsection{實驗結果}\label{ux5be6ux9a57ux7d50ux679c}}
+
+圖~\ref{fig:exp}為文中給出的實驗結果。該表顯示了與JPH演算法相比，本文提出的演算法大幅地減少了執行時間。表中IROF行為另一演算法；雖然執行時間多較本文提出的算法還短，但IROF演算法只能做到判斷\(f\)是否為fanout-free，而不能給出實際的fanout-free表示法，因此本文提出的方法相當具有競爭力。
+
+\begin{figure}
+\hypertarget{fig:exp}{%
+\centering
+\includegraphics[width=0.55\textwidth,height=\textheight]{./resources/res.png}
+\caption{實驗結果}\label{fig:exp}
+}
+\end{figure}
+
+\hypertarget{ux500bux4ebaux770bux6cd5}{%
+\section{個人看法}\label{ux500bux4ebaux770bux6cd5}}
+
+這篇論文提出的方法雖然「簡單」，但背後的洞察（亦即adjacency與disappearance的關係）並不顯然。我十分好奇當時作者如何發現這個潛在的關係。
+
 \hypertarget{refs}{}
 \begin{CSLReferences}{0}{0}
-\leavevmode\vadjust pre{\hypertarget{ref-10.1145ux2f321906.321918}{}}%
+\leavevmode\vadjust pre{\hypertarget{ref-4196069}{}}%
 \CSLLeftMargin{{[}1{]} }
+\CSLRightInline{T.-L. Lee and C.-Y. Wang, {``Recognition of fanout-free
+functions,''} in \emph{2007 asia and south pacific design automation
+conference}, 2007, pp. 426--431. doi:
+\href{https://doi.org/10.1109/ASPDAC.2007.358023}{10.1109/ASPDAC.2007.358023}.}
+
+\leavevmode\vadjust pre{\hypertarget{ref-10.1145ux2f321906.321918}{}}%
+\CSLLeftMargin{{[}2{]} }
 \CSLRightInline{J. P. Hayes, {``The fanout structure of switching
 functions,''} \emph{J. ACM}, vol. 22, no. 4, pp. 551--571, Oct. 1975,
 doi:
