@@ -4,7 +4,7 @@
 title: 'Recognition of Fanout-free Functions'
 subtitle: 'Presentation Report for Introduction to CAD'
 author: '107021129 黃明瀧'
-date: 2022-06-11
+date: 2022-06-12
 fontsize: 12pt
 
 maketitle: true

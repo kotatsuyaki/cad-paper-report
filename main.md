@@ -1,14 +1,14 @@
 # 簡介
 
-這篇論文[@4196069]討論了有效率地判別布林函數是否為Fanout-less（無扇出）的方法。
+這篇論文[@4196069]討論了有效率地判別布林函數是否為Fanout-free（無扇出）的方法。
 作者基於原有的演算法，利用Disappearance（消失）性質與Adjacency（相鄰）性質之間的關係，
 設計出了更高效率的演算法，並以實驗證明該演算法的優勢。
 
 
 # 常用符號與問題定義
 
-Fanout-less
-:   布林函式$f(X)$為fanout-less的，
+Fanout-free
+:   布林函式$f(X)$為fanout-free的，
     若且唯若存在一$f$的表示方法，使得$X=\{x_1, \dots, x_n\}$中每個元素在$f$中出現恰一次。
 
     值得一提的是，在[@10.1145/321906.321918]中，
@@ -110,24 +110,25 @@ $x_j$消失於$f(x_i=a)$中，且$x_i$消失於$f(x_j=a)$中。
 
 以下為作者實際示範使用disappearance性質來檢測adjacency關係的例子。
 令輸入為下列$f$：
-
 $$f = x_1x_2x_3x_4 + x_1x_2x_3x_5 + x_4x_6 + x_5x_6$$
 
 1. 與JPH演算法相同，作者先計算了$f$中$x_1, x_2, \dots, x_6$的cofactors。
 
-   $$\begin{cases}
-   f(x_1 = 0) = x_4x_6+x_5x_6\\
-   f(x_2 = 0) = x_4x_6+x_5x_6\\
-   f(x_3 = 0) = x_4x_6+x_5x_6\\
-   f(x_4 = 0) = x_1x_2x_3x_5+x_5x_6\\
-   f(x_5 = 0) = x_1x_2x_3x_4+x_4x_6\\
-   f(x_6 = 0) = x_1x_2x_3x_4+x_1x_2x_3x_5
-   \end{cases}$$
+   \begingroup
+   \allowdisplaybreaks
+   \begin{align*}
+   f(x_1 = 0) & = x_4x_6+x_5x_6\\
+   f(x_2 = 0) & = x_4x_6+x_5x_6\\
+   f(x_3 = 0) & = x_4x_6+x_5x_6\\
+   f(x_4 = 0) & = x_1x_2x_3x_5+x_5x_6\\
+   f(x_5 = 0) & = x_1x_2x_3x_4+x_4x_6\\
+   f(x_6 = 0) & = x_1x_2x_3x_4+x_1x_2x_3x_5
+   \end{align*}
+   \endgroup
 
 2. 接著，作者以列出二維矩陣的方式，來記錄$x_i$中是否有出現$x_j$。
    下列矩陣當中，$(i, j)$項為$0$代表$x_j$消失於$f(x_1 = 0)$的cofactor中；反之則代表有出現。
    由於cofactor的定義，對角線項全為$0$。
-
    $$\begin{matrix}
    & x_1 & x_2 & x_3 & x_4 & x_5 & x_6\\
    f(x_1 = 0) & \textcolor{gray}{0} & \textcolor{red}{0} & 0 & 1 & 1 & 1\\
@@ -138,15 +139,13 @@ $$f = x_1x_2x_3x_4 + x_1x_2x_3x_5 + x_4x_6 + x_5x_6$$
    f(x_6 = 0) & 1 & 1 & 1 & 1 & 1 & \textcolor{gray}{0}
    \end{matrix}$$
 
-   若是$(i, j)$項與$(j, i)$為$0$，則由定理可以推出$x_i =_0 x_j$。
-   遍歷檢查矩陣中的每一項[^1]，則可以得到所有$=_1$的adjacency關係。
-   對$f(x_i = 1)$的cofactors重複步驟1與步驟2，則可以得到$f$中所有的adjacency classes。
+   若$(i, j)$項與$(j, i)$為$0$，則由定理可以推出$x_i =_0 x_j$。
+   遍歷檢查矩陣中的每一項[^1]，可以得到所有$=_1$的adjacency關係。
+   對$f(x_i = 1)$的cofactors重複步驟1與步驟2，可以得到$f$中所有的adjacency classes。
+   此範例中，變數被分為三個等價類：
+   $$\textcolor{red}{\{x_1, x_2, x_3\}} \textcolor{blue}{\{x_4, x_5\}} \{x_6\}$$
 
    [^1]: 實際上，若$x_i$已被劃入某等價類中，則$f(x_i=a)$列就不需再檢查一次。
-   
-   此範例中，變數被分為三個等價類：
-
-   $$\textcolor{red}{\{x_1, x_2, x_3\}} \textcolor{blue}{\{x_4, x_5\}} \{x_6\}$$
 
 3. 作者按照JPH演算法的函式拆解定理給出新的函式$g(\phi_1, \phi_2, \phi_3)$應當滿足的條件：
 
@@ -184,14 +183,14 @@ $$f = x_1x_2x_3x_4 + x_1x_2x_3x_5 + x_4x_6 + x_5x_6$$
 
 ## 實驗結果
 
+![實驗結果](./resources/res.png){#fig:exp}
+
 [@fig:exp]為文中給出的實驗結果。
 該表顯示了與JPH演算法相比，
 本文提出的演算法大幅地減少了執行時間。
 表中IROF行為另一演算法；雖然執行時間多較本文提出的算法還短，
 但IROF演算法只能做到判斷$f$是否為fanout-free，而不能給出實際的fanout-free表示法，
 因此本文提出的方法相當具有競爭力。
-
-![實驗結果](./resources/res.png){#fig:exp}
 
 # 個人看法
 
